@@ -3,8 +3,8 @@
 // @namespace    https://github.com/Hwlhwlxyz/speed-gesture
 // @version      2024-06-05
 // @description  a mouse gesture userscript
-// @author       You
-// @match        *://*
+// @author       Hwlhwlxyz
+// @match        *://*/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
 // @grant        GM_openInTab
 // ==/UserScript==
