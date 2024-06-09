@@ -11,13 +11,13 @@
 
 let behaviorConfiguration = {
   "1": null,
-  "2": openInIncognitoWindow,
+  "2": { fn: openInIncognitoWindow, text: "cognito" },
   "3": null,
   "4": null,
-  "6": openInIncognitoWindowOrSearchSelectedText,
-  "7": null,
+  "6": { fn: openInIncognitoWindowOrSearchSelectedText, text:"new tab" },
+  "7": { fn: back, text:"back" },
   "8": null,
-  "9": null,
+  "9": { fn: forward, text:"forward" },
 }
 
 let globalState = {
@@ -26,6 +26,7 @@ let globalState = {
   closestAnchor: null
 }
 
+// all functions to be used in configuration 所有配置文件中用到的函数
 function openInBackground(element) {
   let href = globalState["closestAnchor"]?.href;
   if (href != null) {
@@ -46,7 +47,6 @@ function openInIncognitoWindow(element) {
 
 function searchSelectedText(element) {
   const selectedText = globalState["selectedText"];
-  console.log("selectedText:", selectedText)
   if (selectedText != null && selectedText.length > 0) {
     const transformedText = selectedText.split(" ").join("+")
     let searchUrl = "https://duckduckgo.com/?q=" + transformedText;
@@ -57,7 +57,7 @@ function searchSelectedText(element) {
 }
 
 function openInIncognitoWindowOrSearchSelectedText(element) {
-  let success = openInIncognitoWindow(element);
+  let success = openInBackground(element);
   if (success) {
     return true;
   }
@@ -66,34 +66,60 @@ function openInIncognitoWindowOrSearchSelectedText(element) {
   }
 }
 
+function back() {
+  history.back();
+  return true;
+}
+
+function forward() {
+  history.forward();
+  return true;
+}
+
 
 
 const { c, html, css, useState } = await import("https://unpkg.com/atomico");
 
 function component() {
-  const handlerMouseup = (e) => {
-    console.log("mouseup!", e, e.target.id, e.target.getAttribute('id'));
-    let targetId = e.target.id;
-    let runFun = behaviorConfiguration[targetId];
+  const handlerMouseup = (e, targetId) => {
+    function prevent(e) {
+      e.preventDefault();
+    }
+    let runFun = behaviorConfiguration[targetId].fn;
     if (runFun != null) {
       runFun(globalState['targetElement']);
+      document.addEventListener("contextmenu", prevent);
+      setTimeout(() => {
+        document.removeEventListener("contextmenu", prevent);
+      }, 1)
+    }
+    else {
+      document.removeEventListener("contextmenu", prevent);
     }
     return;
   }
 
+  function getTextInSquareStyle(text) {
+    if (text!=null && text.length>0) {
+      return "font-size:"+(20-parseInt(text.length/5))+"px";
+    }
+    return "";
+  }
+
   return html`<host shadowDom>
-    <div class="grid-container">
-      <div id="1" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="2" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="3" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="4" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
+    <div class="grid-container" id="gesture-container" >
+      <div id="1" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 1)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["1"]?.text)}>${behaviorConfiguration["1"]?.text} </div></div>
+      <div id="2" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 2)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["2"]?.text)}>${behaviorConfiguration["2"]?.text} </div> </div>
+      <div id="3" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 3)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["3"]?.text)}>${behaviorConfiguration["3"]?.text} </div> </div>
+      <div id="4" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 4)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["4"]?.text)}>${behaviorConfiguration["4"]?.text} </div> </div>
       <div id="5" class="grid-item" style="background-color:transparent;"></div>
-      <div id="6" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="7" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="8" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
-      <div id="9" class="grid-item" onmouseup=${handlerMouseup} oncontextmenu=${e => e.preventDefault()}></div>
+      <div id="6" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 6)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["6"]?.text)}>${behaviorConfiguration["6"]?.text} </div> </div>
+      <div id="7" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 7)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["7"]?.text)}>${behaviorConfiguration["7"]?.text} </div> </div>
+      <div id="8" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 8)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["8"]?.text)}>${behaviorConfiguration["8"]?.text} </div> </div>
+      <div id="9" class="grid-item" onmouseup=${(e)=>handlerMouseup(e, 9)} oncontextmenu=${e => e.preventDefault()}> <div class="text-in-square" style=${getTextInSquareStyle(behaviorConfiguration["9"]?.text)}>${behaviorConfiguration["9"]?.text} </div> </div>
     </div>
   </host>`;
+
 }
 
 component.props = {
@@ -118,11 +144,15 @@ component.styles = css`
 }
 
 .grid-item {
+  height: 100px;
+  width: 100px;
   background-color: #e74c3c;
   opacity: 0.3;
   color: #fff;
   text-align: center;
-  line-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .grid-item:hover {
@@ -130,13 +160,14 @@ component.styles = css`
   opacity: 1;
   color: #fff;
   text-align: center;
-  line-height: 100px;
 }
 
 .text-in-square {
+  max-width: 100px;
+  max-height: 100px;
   word-wrap: break-word;
-  width: 100px;
-  height: 100px;
+  margin: auto;
+  text-align: center;
 }
 `;
 
@@ -145,45 +176,40 @@ customElements.define("my-component-c", c(component));
 
 (function () {
   'use strict';
-  console.log("v0.21")
   // Your code here...
   const myElementExists = !!customElements.get('my-component-c');
   console.log(myElementExists)
   let myc = document.createElement("my-component-c");
   let boxdiv = document.createElement("div")
   myc.style.position = "absolute";
-
-  myc.style.display = "none"
+  myc.style.display = "none";
   boxdiv.appendChild(myc);
   document.body.appendChild(boxdiv)
 
   addEventListener("mousedown", (event) => {
-    console.log("mousedown:", event.target);
     globalState['targetElement'] = event.target;
     const selObj = window.getSelection();
     const selectedText = selObj.toString();
     globalState["selectedText"] = selectedText;
     const anchor = event.target.closest("a");
     globalState["closestAnchor"] = anchor;
-    console.log(globalState['targetElement'])
-    console.log("state:", globalState)
-    let x = event.pageX;
-    let y = event.pageY;
+
     if (event.button === 2) {
-      myc.style.left = x + "px";
-      myc.style.top = y + "px";
-      myc.style.display = "block"
+      setTimeout(() => {
+        let x = event.pageX;
+        let y = event.pageY;
+        myc.style.left = x + "px";
+        myc.style.top = y + "px";
+        myc.style.display = "block";
+        myc.style.zIndex = 99999;
+      }, 50)
+
     }
   });
 
   addEventListener("mouseup", (event) => {
-    console.log("mouseup:", event.target);
-
     if (event.button === 2) {
-      setTimeout(() => {
-        myc.style.display = "none";
-        globalState['targetElement'] = null;
-      }, "1");
+      myc.style.display = "none"; // 不影响原始右键菜单的行为
     }
   });
 
