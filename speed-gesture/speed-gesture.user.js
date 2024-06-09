@@ -7,6 +7,7 @@
 // @match        *://*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
 // @grant        GM_openInTab
+// ==/UserScript==
 
 let behaviorConfiguration = {
   "1": null,
