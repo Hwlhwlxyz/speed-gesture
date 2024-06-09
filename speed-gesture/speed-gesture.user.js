@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         speed-gesture
-// @namespace    my.userscript.component
+// @namespace    https://github.com/Hwlhwlxyz/speed-gesture
 // @version      2024-06-05
 // @description  a mouse gesture userscript
 // @author       You
