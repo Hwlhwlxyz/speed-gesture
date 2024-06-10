@@ -186,6 +186,7 @@ customElements.define("my-component-c", c(component));
   boxdiv.appendChild(myc);
   document.body.appendChild(boxdiv)
 
+  let displayTimeout = null;
   addEventListener("mousedown", (event) => {
     globalState['targetElement'] = event.target;
     const selObj = window.getSelection();
@@ -195,14 +196,14 @@ customElements.define("my-component-c", c(component));
     globalState["closestAnchor"] = anchor;
 
     if (event.button === 2) {
-      setTimeout(() => {
+      displayTimeout = setTimeout(() => {
         let x = event.pageX;
         let y = event.pageY;
         myc.style.left = x + "px";
         myc.style.top = y + "px";
         myc.style.display = "block";
         myc.style.zIndex = 99999;
-      }, 50)
+      }, 150)
 
     }
   });
@@ -210,6 +211,9 @@ customElements.define("my-component-c", c(component));
   addEventListener("mouseup", (event) => {
     if (event.button === 2) {
       myc.style.display = "none"; // 不影响原始右键菜单的行为
+      if (displayTimeout!=null) {
+        clearTimeout(displayTimeout); // 防止快速点击还显示界面的行为
+      }
     }
   });
 
